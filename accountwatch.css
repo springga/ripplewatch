@@ -1,3 +1,4 @@
 body {font-family: verdana; font-size: 16px;}
 textarea {height: 180px; width: 400px;}
 input#btnWatch {vertical-align: top; height: 36px; width: 100px; font-size: 20px; margin-left: 10px;}
+.red {color: red;}

@@ -5,7 +5,6 @@ var opStatus = document.getElementById("status");
 var opWatch =  document.getElementById("watch");
 var txAddr = document.getElementById("addresses");
 var PRECISON_RATE = 6;
-var PRECISON_AMT = 0;
 var JED = [
 "rJYMACXJd1eejwzZA53VncYmiK2kZSBxyD",
 "rnNqkPMMnrFdiq7uN1r4uAjq7Tvab4xgvL",
@@ -19,7 +18,8 @@ var JED = [
 "rnt3D5HCZxqkqnq5Xsm4wkkr1fWK48oHwT",
 "rG1icQptiLK2ntLH4zT76kKfR1PzvMtFjd",
 "rBt92zFDGzK2tCoTkxr81NojbKBXoec1wS"
-]
+];
+URL_RIPPLEINFO = "http://rippleinfo.sinaapp.com/";
 
 function init() {
 	var addrs = "";
@@ -82,13 +82,13 @@ function procSubscribe(data) {
 		case "TrustSet":
 			var currency = tx.LimitAmount.currency;
 			var issuer = 
-			txt_notify = tx.LimitAmount.value + 
+			txt_notify = tx.LimitAmount.value + " " + 
 				tx.LimitAmount.currency + " " + tx.LimitAmount.issuer;
 			break;
 		case "Payment":
 			var amount =  toAmount(tx.Amount)
-			txt_notify = amount.value + amount.currency +
-				"from " + account + " to " + tx.Destination;
+			txt_notify = amount.value + " " + amount.currency +
+				" from " + account + " to " + tx.Destination;
 			break;
 		case "OfferCreate":
 			var get = toAmount(tx.TakerGets);
@@ -111,9 +111,10 @@ function procSubscribe(data) {
 			});
 			break;
 	}
-	txt_notify = account + " - " + type + ": " + txt_notify
-	writeToWatch(txt_notify);
-	alert(txt_notify);
+	var txt_watch = markJed(account) + " - " + type + ": " + txt_notify;
+	var txt_alert = account + "\n" + type + ": " + txt_notify;
+	writeToWatch(txt_watch);
+	alert(txt_alert);
 }
 
 function cmdSubscribe(id, cmd, accounts) {
@@ -134,8 +135,6 @@ function calcDate(date) {
         + (min < 10 ? "0" + min : min);}
 function xrp(balance) {
 	return balance / 1000000;}
-function toFee(fee) {
-	return (xrp(fee) - 1000) / 10;}
 function toAmount(amount) {
 	var amt = {value: 0, currency: '', issuer: ''};
 	if(amount.currency) {
@@ -168,5 +167,9 @@ function writeToWatch(data) {
 	var row = document.createElement("tr");
 	row.innerHTML = "<td>" + data + "</td>";
 	opWatch.appendChild(row);}
+
+function markJed(account) {
+	return "<span class='" + (JED.indexOf(account)>=0 ? "red" : "") + "'>" + account + "</span>"
+}
 
 window.addEventListener("load", init, false);
