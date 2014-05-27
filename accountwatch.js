@@ -5,6 +5,7 @@ var opStatus = document.getElementById("status");
 var opWatch =  document.getElementById("watch");
 var txAddr = document.getElementById("addresses");
 var PRECISON_RATE = 6;
+var DATE_RIPPLE_START = new Date(2000,0,1);
 var JED = [
 "rJYMACXJd1eejwzZA53VncYmiK2kZSBxyD",
 "rnNqkPMMnrFdiq7uN1r4uAjq7Tvab4xgvL",
@@ -58,12 +59,16 @@ function onError(evt) {
 	writeToStatus("<span style='color:red;'>错误: </span> " + evt.data);
 }
 function onClose(evt) {
-	writeToStatus("连接断开，请重新点击开始！");
+	writeToStatus("连接断开，正重新开始...");
+	var date = formatDate(new Date);
+	var txt_pause = date + " 连接中断，重新连接。";
+	writeToWatch(txt_pause);
+	startWebSocket();
 }
 function onMessage(evt) {
 	var data = JSON.parse(evt.data);
 	switch(data.id) {
-		case 1: procWatch(data); break;	
+		case 1: procWatch(data); break;
 		default: procSubscribe(data);
 	}
 }
@@ -73,8 +78,9 @@ function procWatch(data) {
 	writeToStatus("监控开始！");
 }
 function procSubscribe(data) {
-	console.log(data);	
+	console.log(data);
 	var tx = data.transaction;
+	var date = calcDate(tx.date);
 	var account = tx.Account;
 	var type = tx.TransactionType;
 	var txt_notify;
@@ -83,7 +89,7 @@ function procSubscribe(data) {
 			var currency = tx.LimitAmount.currency;
 			var issuer = 
 			txt_notify = tx.LimitAmount.value + " " + 
-				tx.LimitAmount.currency + " " + tx.LimitAmount.issuer;
+				tx.LimitAmount.currency + " to " + tx.LimitAmount.issuer;
 			break;
 		case "Payment":
 			var amount =  toAmount(tx.Amount)
@@ -111,7 +117,7 @@ function procSubscribe(data) {
 			});
 			break;
 	}
-	var txt_watch = markJed(account) + " - " + type + ": " + txt_notify;
+	var txt_watch = date + " " + markJed(account) + " - " + type + ": " + txt_notify;
 	var txt_alert = account + "\n" + type + ": " + txt_notify;
 	writeToWatch(txt_watch);
 	alert(txt_alert);
@@ -123,6 +129,8 @@ function cmdSubscribe(id, cmd, accounts) {
 
 function calcDate(date) {
 	var d = new Date(DATE_RIPPLE_START.getTime() - DATE_RIPPLE_START.getTimezoneOffset() * 60 * 1000 + date * 1000);
+	return formatDate(d);}
+function formatDate(d) {
 	var year = d.getFullYear();
 	var month = d.getMonth() + 1;
 	var day = d.getDate();
@@ -131,8 +139,9 @@ function calcDate(date) {
 	var sec = d.getSeconds();
 	return year + "/" + (month < 10 ? "0" + month : month) + "/"
         + (day < 10 ? "0" + day : day) + " "
-     	+ (hour < 10 ? "0" + hour : hour) + ":"
-        + (min < 10 ? "0" + min : min);}
+     		+ (hour < 10 ? "0" + hour : hour) + ":"
+        + (min < 10 ? "0" + min : min) + ":"
+      	+ (sec < 10 ? "0" + sec : sec);}
 function xrp(balance) {
 	return balance / 1000000;}
 function toAmount(amount) {
